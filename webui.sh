@@ -127,7 +127,10 @@ else
     exit 1
 fi
 
-printf "\n%s\n" "${delimiter}"
-printf "Launching launch.py..."
-printf "\n%s\n" "${delimiter}"
-"${python_cmd}" launch.py
+if [[ -z "${skip_run}" ]]
+then
+    printf "\n%s\n" "${delimiter}"
+    printf "Launching launch.py..."
+    printf "\n%s\n" "${delimiter}"
+    "${python_cmd}" launch.py
+fi
