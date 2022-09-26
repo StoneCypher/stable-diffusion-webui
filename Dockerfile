@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM nvidia/cuda:10.2-devel-ubuntu22.04
+FROM nvidia/cuda:11.7.0-cudnn8-devel-ubuntu22.04
 
 # provide NVIDIA device access to the outside
 # TODO make this an ARG so that at build time the user can pick
@@ -10,30 +10,28 @@ ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 # TODO CHECKME should this actually be cuda 10?  dunno what this software wants
 ENV NVIDIA_REQUIRE_CUDA "cuda>=8.0"
 
+# Outdated signing key, see https://forums.developer.nvidia.com/t/notice-cuda-linux-repository-key-rotation/212772
+# Remove sudo from commands because it's redundant and disallowed in context
+RUN apt-key del 7fa2af80
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
+RUN dpkg -i cuda-keyring_1.0-1_all.deb
+
 # Prevent the tzdata dockerfile blockage by manually installing tzdata
 # Must update first or tzdata won't be known
 ENV TZ=Etc/UTC
 RUN apt-get update -y
 RUN DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata
 
-# Now we can do a first-pass upgrade before looping in 3.10
-RUN apt-get upgrade -y
-
-# Network utils like nslookup, whois, etc
-RUN apt-get install software-properties-common -y
-
-# Access to py3.10; ubuntu18 ships 3.6.9, which can't source torch as a req
-RUN add-apt-repository ppa:deadsnakes/ppa -y
-
-# New update and upgrade pass
+# Update and upgrade pass
 RUN apt-get update -y
 RUN apt-get upgrade -y
 
 # Install several of the things (broom)
-RUN apt-get install wget git python3-venv python3.10 python3-pip iputils-ping traceroute dnsutils whois nano -y
+RUN apt-get install wget git python3-venv python python3-pip iputils-ping traceroute dnsutils whois nano software-properties-common -y
 
-# Install py3.10 afterwards, because otherwise the other py things were installing 3.6 back over it
-RUN apt-get install python3.10 -y
+# Second update and upgrade pass
+RUN apt-get update -y
+RUN apt-get upgrade -y
 
 # To the angry dome
 WORKDIR /a11
