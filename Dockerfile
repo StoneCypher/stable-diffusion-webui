@@ -8,6 +8,7 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=8.0"
 RUN apt-get update -y
 RUN apt-get upgrade -y
 RUN apt-get install wget git python3 python3-venv iputils-ping traceroute dnsutils whois -y
+RUN python3 -m ensurepip --upgrade
 
 WORKDIR /a11
 
